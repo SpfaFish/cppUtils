@@ -1,0 +1,5 @@
+// the configured options and settings for Utils
+#define Utils_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define Utils_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define Utils_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define TIMESTAMP @COMPILE_TIME@
