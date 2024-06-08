@@ -2,6 +2,7 @@
 #include "list.hpp"
 #include "lru.hpp"
 #include "lfu.hpp"
+#include "fifo.hpp"
 
 TEST(ListTest, TestInsert) {
     List<int> list;
@@ -48,6 +49,16 @@ TEST(LFUTest, Test) {
         lfu.put(i, i);
     }
     assert(lfu.get(6, v));
+}
+TEST(FIFOTest, Test) {
+    FIFO<int, int> fifo(10);
+    for(int i = 1; i <= 15; i++) {
+        fifo.put(i, i);
+    }
+    fifo.put(7, 7);
+    int v;
+    assert(!fifo.get(5, v));
+    assert(fifo.get(6, v));
 }
 int main () {
     testing::InitGoogleTest();

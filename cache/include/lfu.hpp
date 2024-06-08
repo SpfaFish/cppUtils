@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 
 #include "list.hpp"
 
@@ -19,6 +18,7 @@ class LFU {
         size_t cnt;
     };
   public:
+    LFU() = delete;
     LFU(size_t capacity): capacity_(capacity) {
         freq_to_list_[0] = new List<Val>();
     }

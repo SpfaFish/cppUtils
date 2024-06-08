@@ -17,7 +17,7 @@ find_package(GTest)
 
 set (TEST_NAME cacheTest)
 
-add_executable(${TEST_NAME} tests/main.cpp ${SRC_LIST})
+add_executable(${TEST_NAME} tests/cache_test.cpp ${SRC_LIST})
 
 MESSAGE(${GTEST_BOTH_LIBRARIES})
 MESSAGE(${GTEST_LIBRARIES})

@@ -1,26 +1,19 @@
 #pragma once
 
-#include <cassert>
-#include <cstddef>
-#include <memory>
-
 #include "list.hpp"
+#include <cassert>
 
-//K is V's view
-//(K)V must exist
 template <typename K, typename V>
-class LRU {
+class FIFO {
   public:
-    LRU() = delete;
-    LRU(int capacity): capacity_(capacity) {
+    FIFO() = delete;
+    FIFO(size_t capacity): capacity_(capacity) {
         assert(capacity > 0);
     }
     void put(const K& key, const V& value) {
         auto it = tp.find(key);
         if (it != tp.end()) {
-            it->second->obj_ = value;
-            list_->extract(it->second);
-            list_->insert(it->second);
+            return;
         } else {
             if (tp.size() == capacity_) {
                 tp.erase((K)list_->dummy_->prev_->obj_);
@@ -33,8 +26,6 @@ class LRU {
         auto it = tp.find(key);
         if (it != tp.end()) {
             value = (it->second->obj_);
-            it->second->extract();
-            list_->insert(it->second);
             return true;
         } else {
             return false;
