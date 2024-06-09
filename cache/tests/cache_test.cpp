@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <random>
 #include "list.hpp"
 #include "lru.hpp"
 #include "lfu.hpp"
@@ -24,7 +25,6 @@ TEST(LRUTest, Test) {
     for(int i = 1; i <= 15; i++) {
         lru.put(i, i);
     }
-    std::cout << "here" << std::endl;
     int v;
     if (lru.get(5, v) ) {
         std::cout << v << std::endl;
@@ -64,6 +64,47 @@ TEST(FIFOTest, Test) {
 TEST(OPTTest, Test) {
     OPT<int, int> opt(5);
     std::cout << opt.calculate(std::vector<int>{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5}) << std::endl;
+}
+std::vector<int> randSeq(int size, int mx) {
+    thread_local std::mt19937 gen(std::random_device{}());
+    std::vector<int> res(size);
+    for (int i = 0; i < size; i++) {
+        res[i] = gen() % mx;
+    }
+    return res;
+}
+template <typename Cache>
+double commonTest(const std::vector<int>& seq, int capacity) {
+    Cache cache(capacity);
+    double hit = 0;
+    for (auto& i : seq) {
+        int v;
+        // 双倍贡献
+        if (cache.get(i, v)) {
+            ++hit;
+            cache.put(i, i);
+        } else {
+            cache.put(i, i);
+            cache.put(i, i);
+        }
+    }
+    return static_cast<double>(hit) / seq.size();
+}
+double optTest(const std::vector<int>& seq, int capacity) {
+    OPT<int, int> opt(capacity);
+    return opt.calculate(seq);
+}
+TEST(FinalTest, Test) {
+    std::vector<int> seq = randSeq(10000, 1000);
+    // std::cout << "seq: ";
+    // for (int x : seq) {
+    //     std::cout << x << " ";
+    // } std::cout << std::endl;
+    const int capacity = 500;
+    std::cout << "FIFO: " << commonTest<FIFO<int, int>>(seq, capacity) << std::endl;
+    std::cout << "LRU: " << commonTest<LRU<int, int>>(seq, capacity) << std::endl;
+    std::cout << "LFU: " << commonTest<LFU<int, int>>(seq, capacity) << std::endl;
+    std::cout << "OPT: " << optTest(seq, capacity) << std::endl;
 }
 int main () {
     testing::InitGoogleTest();

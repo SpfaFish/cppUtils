@@ -50,6 +50,7 @@ class LFU {
                 list->erase(tmp);
             }
             auto* node = new Node<Val>(Val(value));
+            min_freq_ = 0;
             tp_[key] = node;
             freq_to_list_[0]->insert(node);
         }

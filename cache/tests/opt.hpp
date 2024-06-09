@@ -23,7 +23,7 @@ class OPT {
             id = cnt;
         }
         bool operator < (const node& rhs) const {
-            return value == rhs.value ? id < rhs.id : value < rhs.value; 
+            return value == rhs.value ? id < rhs.id : value > rhs.value; 
         }
     };
     OPT() = delete;
@@ -65,13 +65,14 @@ class OPT {
                 auto& p = ++ptr[values[i]];
                 auto& list = obj_list_[values[i]];
                 if (p > 0) {
-                    s.erase(node(static_cast<K>(reqs[i]), p == list.size() ? inf : list[p] - list[p - 1], p - 1));
+                    s.erase(node(static_cast<K>(reqs[i]), p == list.size() ? -inf : list[p] - list[p - 1], list[p - 1]));
                 }
                 if (p < list.size()) {
-                    s.insert(node(static_cast<K>(reqs[i]), p + 1 == list.size() ? inf : list[p + 1] - list[p], p));
+                    s.insert(node(static_cast<K>(reqs[i]), p + 1 == list.size() ? -inf : list[p + 1] - list[p], i));
                 }
             } else {
                 if (st.size() == capacity_) {
+                    // std::cout << i << " " << " out " << s.begin()->key << std::endl;
                     st.erase(s.begin()->key);
                     s.erase(s.begin());
                 }
