@@ -29,7 +29,6 @@ class OPT {
     OPT() = delete;
     OPT(int capacity): capacity_(capacity) {
         assert(capacity > 0);
-        cnt = 0;
     }
     size_t __get(K key) {
         return std::lower_bound(p.begin(), p.end(), key) - p.begin();
@@ -63,11 +62,13 @@ class OPT {
             auto it = st.find(static_cast<K>(reqs[i]));
             if (it != st.end()) {
                 ++cnt;
-                s.erase(it);
                 auto& p = ++ptr[values[i]];
                 auto& list = obj_list_[values[i]];
+                if (p > 0) {
+                    s.erase(node(static_cast<K>(reqs[i]), p == list.size() ? inf : list[p] - list[p - 1], p - 1));
+                }
                 if (p < list.size()) {
-                    s.insert(node(static_cast<K>(reqs[i]), p + 1 == list.size() ? inf : list[p + 1] - list[p], ++this->cnt));
+                    s.insert(node(static_cast<K>(reqs[i]), p + 1 == list.size() ? inf : list[p + 1] - list[p], p));
                 }
             } else {
                 if (st.size() == capacity_) {
@@ -78,11 +79,11 @@ class OPT {
                 auto& p = ++ptr[values[i]];
                 auto& list = obj_list_[values[i]];
                 if (p < list.size()) {
-                    s.insert(node(static_cast<K>(reqs[i]), p + 1 == list.size() ? inf : list[p + 1] - list[p], ++this->cnt));
+                    s.insert(node(static_cast<K>(reqs[i]), p + 1 == list.size() ? inf : list[p + 1] - list[p], p));
                 }
             }
         }
-        return static_cast<double>(reqs.size()) / cnt;
+        return cnt / static_cast<double>(reqs.size());
     }
   private:
     int capacity_;
@@ -91,7 +92,6 @@ class OPT {
     std::vector<size_t> id;
     std::vector<std::vector<size_t> > obj_list_;
     std::set<K> st;
-    std::atomic_uint32_t cnt;
 };
 
 #undef inf 

@@ -3,6 +3,7 @@
 #include "lru.hpp"
 #include "lfu.hpp"
 #include "fifo.hpp"
+#include "opt.hpp"
 
 TEST(ListTest, TestInsert) {
     List<int> list;
@@ -59,6 +60,10 @@ TEST(FIFOTest, Test) {
     int v;
     assert(!fifo.get(5, v));
     assert(fifo.get(6, v));
+}
+TEST(OPTTest, Test) {
+    OPT<int, int> opt(5);
+    std::cout << opt.calculate(std::vector<int>{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5}) << std::endl;
 }
 int main () {
     testing::InitGoogleTest();
