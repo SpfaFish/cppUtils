@@ -53,14 +53,19 @@ class OPT {
         }
     }
     // 算出命中率
-    double calculate(const std::vector<V>& reqs) {
+    std::tuple<double, double, std::vector<double> >  calculate(const std::vector<V>& reqs, double memory_access_time = 1, double interrupt_time = 100) {
         __preWork(reqs);
         int64_t cnt = 0;
         std::set<node> s;
         std::vector<size_t> ptr(obj_list_.size(), -1);
+        double cost = 0;
+        std::vector<double> res;
+        res.reserve(reqs.size());
         for (size_t i = 0; i < reqs.size(); i++) {
             auto it = st.find(static_cast<K>(reqs[i]));
             if (it != st.end()) {
+                cost += memory_access_time;
+                res.emplace_back(memory_access_time);
                 ++cnt;
                 auto& p = ++ptr[values[i]];
                 auto& list = obj_list_[values[i]];
@@ -71,6 +76,8 @@ class OPT {
                     s.insert(node(static_cast<K>(reqs[i]), p + 1 == list.size() ? -inf : list[p + 1] - list[p], i));
                 }
             } else {
+                cost += memory_access_time + interrupt_time;
+                res.emplace_back(memory_access_time + interrupt_time);
                 if (st.size() == capacity_) {
                     // std::cout << i << " " << " out " << s.begin()->key << std::endl;
                     st.erase(s.begin()->key);
@@ -84,7 +91,7 @@ class OPT {
                 }
             }
         }
-        return cnt / static_cast<double>(reqs.size());
+        return {cnt / static_cast<double>(reqs.size()), cost, res};
     }
   private:
     int capacity_;

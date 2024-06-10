@@ -63,7 +63,7 @@ TEST(FIFOTest, Test) {
 }
 TEST(OPTTest, Test) {
     OPT<int, int> opt(5);
-    std::cout << opt.calculate(std::vector<int>{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5}) << std::endl;
+    std::cout << std::get<0>(opt.calculate(std::vector<int>{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5})) << std::endl;
 }
 std::vector<int> randSeq(int size, int mx) {
     thread_local std::mt19937 gen(std::random_device{}());
@@ -92,7 +92,7 @@ double commonTest(const std::vector<int>& seq, int capacity) {
 }
 double optTest(const std::vector<int>& seq, int capacity) {
     OPT<int, int> opt(capacity);
-    return opt.calculate(seq);
+    return std::get<0>(opt.calculate(seq));
 }
 TEST(FinalTest, Test) {
     std::vector<int> seq = randSeq(10000, 1000);
