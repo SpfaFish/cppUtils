@@ -11,13 +11,15 @@ include_directories(./include)
 
 aux_source_directory(./src SRC_LIST)
 
-find_package(GTest)
+aux_source_directory(./include INCLUDE_LIST)
 
-# add_library(Cache ${SRC_LIST})
+find_package(GTest)
 
 set (TEST_NAME cacheTest)
 
 add_executable(${TEST_NAME} tests/cache_test.cpp ${SRC_LIST})
+
+# add_library(cache ${INCLUDE_LIST})
 
 MESSAGE(${GTEST_BOTH_LIBRARIES})
 MESSAGE(${GTEST_LIBRARIES})
