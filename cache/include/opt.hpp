@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <atomic>
 #include <cstddef>
+#include <stack>
+#include <string>
 #include <vector>
 #include <cassert>
 #include <set>
@@ -29,6 +31,11 @@ class OPT {
     OPT() = delete;
     OPT(int capacity): capacity_(capacity) {
         assert(capacity > 0);
+        mem.resize(capacity);
+        for (int i = capacity - 1; i >= 0; i--) {
+            stk.push(i);
+            mem[i] = "-";
+        }
     }
     size_t __get(K key) {
         return std::lower_bound(p.begin(), p.end(), key) - p.begin();
@@ -53,7 +60,7 @@ class OPT {
         }
     }
     // 算出命中率
-    std::tuple<double, double, std::vector<double> >  calculate(const std::vector<V>& reqs, double memory_access_time = 1, double interrupt_time = 100) {
+    std::tuple<double, double, std::vector<double>, std::vector<std::vector<std::string> > > calculate(const std::vector<V>& reqs, double memory_access_time = 1, double interrupt_time = 100) {
         __preWork(reqs);
         int64_t cnt = 0;
         std::set<node> s;
@@ -61,6 +68,8 @@ class OPT {
         double cost = 0;
         std::vector<double> res;
         res.reserve(reqs.size());
+        std::vector<std::vector<std::string> > data;
+        data.reserve(reqs.size());
         for (size_t i = 0; i < reqs.size(); i++) {
             auto it = st.find(static_cast<K>(reqs[i]));
             if (it != st.end()) {
@@ -81,6 +90,9 @@ class OPT {
                 if (st.size() == capacity_) {
                     // std::cout << i << " " << " out " << s.begin()->key << std::endl;
                     st.erase(s.begin()->key);
+                    mem[mem_map[s.begin()->key]] = "-";
+                    stk.push(mem_map[s.begin()->key]);
+                    mem_map.erase(s.begin()->key);
                     s.erase(s.begin());
                 }
                 st.insert(static_cast<K>(reqs[i]));
@@ -88,10 +100,13 @@ class OPT {
                 auto& list = obj_list_[values[i]];
                 if (p < list.size()) {
                     s.insert(node(static_cast<K>(reqs[i]), p + 1 == list.size() ? inf : list[p + 1] - list[p], p));
+                    mem[stk.top()] = std::to_string(static_cast<K>(reqs[i]));
+                    mem_map[static_cast<K>(reqs[i])] = stk.top(); stk.pop();
                 }
             }
+            data.emplace_back(mem);
         }
-        return {cnt / static_cast<double>(reqs.size()), cost, res};
+        return {cnt / static_cast<double>(reqs.size()), cost, res, data};
     }
   private:
     int capacity_;
@@ -100,6 +115,9 @@ class OPT {
     std::vector<size_t> id;
     std::vector<std::vector<size_t> > obj_list_;
     std::set<K> st;
+    std::stack<int> stk;
+    std::vector<std::string> mem;
+    std::unordered_map<K, int> mem_map;
 };
 
 #undef inf 

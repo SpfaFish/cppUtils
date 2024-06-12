@@ -1,5 +1,6 @@
 #include <cctype>
 #include <random>
+#include <string>
 #include <vector>
 #include <tuple>
 
@@ -28,30 +29,40 @@ std::vector<int> randSeq(int size, int mx) {
 }
 // 命中率，平均访问时间，每次访问时间
 template <typename Cache>
-std::tuple<double, double, std::vector<double> > commonTest(const std::vector<int>& seq, int capacity) {
+std::tuple<double, double, std::vector<double>, std::vector<std::vector<std::string> > > commonTest(const std::vector<int>& seq, int capacity) {
     Cache cache(capacity);
     double hit = 0;
     double cost = 0;
     std::vector<double> res;
     res.reserve(seq.size());
+    std::vector<std::vector<std::string> > data;
+    data.reserve(seq.size());
+    int not_hit = 0;
     for (auto& i : seq) {
         int v;
         // 双倍贡献
+        bool flag = true;
         if (cache.get(i, v)) {
             ++hit;
             cost += FLAGS_memory_access_time;
             res.emplace_back(FLAGS_memory_access_time);
             cache.put(i, i);
         } else {
+            ++not_hit;
+            flag = false;
             cost += FLAGS_memory_access_time + FLAGS_interrupt_time;
             res.emplace_back(FLAGS_memory_access_time + FLAGS_interrupt_time);
             cache.put(i, i);
             cache.put(i, i);
         }
+        auto tmp = cache.getMemory();
+        tmp.push_back(flag ? "Yes" : "No");
+        tmp.push_back(std::to_string(not_hit));
+        data.emplace_back(tmp);
     }
-    return {static_cast<double>(hit) / seq.size(), cost, res};
+    return {static_cast<double>(hit) / seq.size(), cost, res, data};
 }
-std::tuple<double, double, std::vector<double> >  optTest(const std::vector<int>& seq, int capacity) {
+std::tuple<double, double, std::vector<double>, std::vector<std::vector<std::string> > >  optTest(const std::vector<int>& seq, int capacity) {
     OPT<int, int> opt(capacity);
     return opt.calculate(seq, FLAGS_memory_access_time, FLAGS_interrupt_time);
 }
@@ -79,8 +90,14 @@ int main (int argc, char* argv[]) {
     }
     if (FLAGS_cache) {
         {
-            auto [rate, cost, res] = commonTest<FIFO<int, int>>(seq, FLAGS_capacity);
-            std::cout << "[FIFO] hit rate: " << rate << " cost time: " << cost << "ms" << std::endl;
+            auto [rate, cost, res, data] = commonTest<FIFO<int, int>>(seq, FLAGS_capacity);
+            // std::cout << "[FIFO] hit rate: " << rate << " cost time: " << cost << "ms" << std::endl;
+            for (int i = 0; i < data.size(); i++) {
+                for(int j = 0;  j < data[i].size(); j++) {
+                    std::cout << data[i][j] << " ";
+                } std::cout << std::endl;
+            }
+            std::cout << "[FIFO]hitRate: " << rate << std::endl << "[FIFO]costTime: " << cost << std::endl;
             if (FLAGS_output_each_cost) {
                 for (double x : res) {
                     std::cout << x << " ";
@@ -88,8 +105,14 @@ int main (int argc, char* argv[]) {
             }
         }
         {
-            auto [rate, cost, res] = commonTest<LRU<int, int>>(seq, FLAGS_capacity);
-            std::cout << "[LRU] hit rate: " << rate << " cost time: " << cost << "ms" << std::endl;
+            auto [rate, cost, res, data]  = commonTest<LRU<int, int>>(seq, FLAGS_capacity);
+            // std::cout << "[LRU] hit rate: " << rate << " cost time: " << cost << "ms" << std::endl;
+            for (int i = 0; i < data.size(); i++) {
+                for(int j = 0;  j < data[i].size(); j++) {
+                    std::cout << data[i][j] << " ";
+                } std::cout << std::endl;
+            }
+            std::cout << "[LRU]hitRate: " << rate << std::endl << "[LRU]costTime: " << cost << std::endl;
             if (FLAGS_output_each_cost) {
                 for (double x : res) {
                     std::cout << x << " ";
@@ -97,8 +120,14 @@ int main (int argc, char* argv[]) {
             }
         }
         {
-            auto [rate, cost, res] = commonTest<LFU<int, int>>(seq, FLAGS_capacity);
-            std::cout << "[LFU] hit rate: " << rate << " cost time: " << cost << "ms" << std::endl;
+            auto [rate, cost, res, data] = commonTest<LFU<int, int>>(seq, FLAGS_capacity);
+            for (int i = 0; i < data.size(); i++) {
+                for(int j = 0;  j < data[i].size(); j++) {
+                    std::cout << data[i][j] << " ";
+                } std::cout << std::endl;
+            }
+            // std::cout << "[LFU] hit rate: " << rate << " cost time: " << cost << "ms" << std::endl;
+            std::cout << "[LFU]hitRate: " << rate << std::endl << "[LFU]costTime: " << cost << std::endl;
             if (FLAGS_output_each_cost) {
                 for (double x : res) {
                     std::cout << x << " ";
@@ -106,8 +135,13 @@ int main (int argc, char* argv[]) {
             }
         }
         {
-            auto [rate, cost, res] = optTest(seq, FLAGS_capacity);
-            std::cout << "[OPT] hit rate: " << rate << " cost time: " << cost << "ms" << std::endl;
+            auto [rate, cost, res, data] = optTest(seq, FLAGS_capacity);
+            for (int i = 0; i < data.size(); i++) {
+                for(int j = 0;  j < data[i].size(); j++) {
+                    std::cout << j << " ";
+                } std::cout << std::endl;
+            }
+            std::cout << "[OPT]hitRate: " << rate << std::endl << "[OPT]costTime: " << cost << std::endl;
             if (FLAGS_output_each_cost) {
                 for (double x : res) {
                     std::cout << x << " ";

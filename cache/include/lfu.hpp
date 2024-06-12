@@ -1,6 +1,7 @@
 #pragma once
 
 #include "list.hpp"
+#include <stack>
 
 //K is V's view
 //(K)V must exist
@@ -21,6 +22,11 @@ class LFU {
     LFU() = delete;
     LFU(size_t capacity): capacity_(capacity) {
         freq_to_list_[0] = new List<Val>();
+        mem.resize(capacity);
+        for (int i = capacity - 1; i >= 0; i--) {
+            s.push(i);
+            mem[i] = "-";
+        }
     }
     ~LFU() {
         for(auto& [k, v] : freq_to_list_) {
@@ -46,6 +52,9 @@ class LFU {
                 }
                 auto& list = freq_to_list_[min_freq_];
                 auto& tmp = list->dummy_->prev_;
+                mem[mem_map[(K)tmp->obj_.value]] = "-";
+                s.push(mem_map[(K)tmp->obj_.value]);
+                mem_map.erase((K)tmp->obj_.value);
                 tp_.erase((K)tmp->obj_.value);
                 list->erase(tmp);
             }
@@ -53,6 +62,8 @@ class LFU {
             min_freq_ = 0;
             tp_[key] = node;
             freq_to_list_[0]->insert(node);
+            mem[s.top()] = std::to_string(key);
+            mem_map[key] = s.top(); s.pop();
         }
     }
     bool get(const K& key, V& value) {
@@ -71,10 +82,16 @@ class LFU {
         freq_to_list_[obj.cnt]->insert(it->second);
         return true;
     }
+    std::vector<std::string> getMemory() {
+        return mem;
+    }
   private:
     size_t capacity_;
     size_t min_freq_ = 0;
     size_t max_freq_ = 0;
     std::unordered_map<int, List<Val>*> freq_to_list_;
     std::unordered_map<K, Node<Val>*> tp_;
+    std::stack<int> s;
+    std::vector<std::string> mem;
+    std::unordered_map<K, int> mem_map;
 };
