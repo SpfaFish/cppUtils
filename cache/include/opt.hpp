@@ -70,7 +70,9 @@ class OPT {
         res.reserve(reqs.size());
         std::vector<std::vector<std::string> > data;
         data.reserve(reqs.size());
+        int not_hit = 0;
         for (size_t i = 0; i < reqs.size(); i++) {
+            bool flag = true;
             auto it = st.find(static_cast<K>(reqs[i]));
             if (it != st.end()) {
                 cost += memory_access_time;
@@ -85,6 +87,8 @@ class OPT {
                     s.insert(node(static_cast<K>(reqs[i]), p + 1 == list.size() ? -inf : list[p + 1] - list[p], i));
                 }
             } else {
+                flag = false;
+                ++not_hit;
                 cost += memory_access_time + interrupt_time;
                 res.emplace_back(memory_access_time + interrupt_time);
                 if (st.size() == capacity_) {
@@ -104,7 +108,11 @@ class OPT {
                     mem_map[static_cast<K>(reqs[i])] = stk.top(); stk.pop();
                 }
             }
-            data.emplace_back(mem);
+            auto tmp = mem;
+            tmp.insert(tmp.begin(), std::to_string((K)reqs[i]));
+            tmp.push_back(flag ? "Yes" : "No");
+            tmp.push_back(std::to_string(not_hit));
+            data.emplace_back(std::move(tmp));
         }
         return {cnt / static_cast<double>(reqs.size()), cost, res, data};
     }

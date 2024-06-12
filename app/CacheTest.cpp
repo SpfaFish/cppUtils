@@ -56,6 +56,7 @@ std::tuple<double, double, std::vector<double>, std::vector<std::vector<std::str
             cache.put(i, i);
         }
         auto tmp = cache.getMemory();
+        tmp.insert(tmp.begin(), std::to_string(i));
         tmp.push_back(flag ? "Yes" : "No");
         tmp.push_back(std::to_string(not_hit));
         data.emplace_back(tmp);
@@ -138,7 +139,7 @@ int main (int argc, char* argv[]) {
             auto [rate, cost, res, data] = optTest(seq, FLAGS_capacity);
             for (int i = 0; i < data.size(); i++) {
                 for(int j = 0;  j < data[i].size(); j++) {
-                    std::cout << j << " ";
+                    std::cout << data[i][j] << " ";
                 } std::cout << std::endl;
             }
             std::cout << "[OPT]hitRate: " << rate << std::endl << "[OPT]costTime: " << cost << std::endl;
